@@ -1159,104 +1159,399 @@ body {
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     .container {
-        padding: 8px;
+        padding: 12px;
+        max-width: 100%;
     }
     
+    /* 헤더 모바일 최적화 */
     .header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 8px;
+        margin-bottom: 16px;
+        gap: 8px;
+    }
+    
+    .header h1 {
+        font-size: 1.5rem;
+        flex: 1;
+        text-align: left;
+    }
+    
+    .header-controls {
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
+    }
+    
+    /* 인증 버튼 모바일 최적화 */
+    .auth-controls {
+        display: flex;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+    
+    .auth-btn-header {
+        font-size: 11px;
+        padding: 6px 10px;
+        white-space: nowrap;
+    }
+    
+    .forgot-btn-header {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+    
+    /* 테마 토글 모바일 최적화 */
+    .theme-toggle {
+        padding: 8px;
+        font-size: 1rem;
+    }
+    
+    /* 뷰 탭 모바일 최적화 */
+    .view-tabs {
+        margin-bottom: 12px;
+        gap: 4px;
+    }
+    
+    .view-tab {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+    
+    /* 입력 섹션 모바일 최적화 */
+    .input-section {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .input-group {
         flex-direction: column;
+        gap: 12px;
+    }
+    
+    #todoInput {
+        padding: 14px 16px;
+        font-size: 16px; /* iOS 줌 방지 */
+    }
+    
+    .add-btn {
+        padding: 14px 20px;
+        font-size: 16px;
+    }
+    
+    .input-options {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .input-options select,
+    .input-options input {
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+    
+    /* 할 일 목록 모바일 최적화 */
+    .todos-container {
         gap: 16px;
-        text-align: center;
+    }
+    
+    .todo-section h2 {
+        font-size: 1.2rem;
+        margin-bottom: 12px;
+    }
+    
+    .todo-item {
+        padding: 16px;
+        margin-bottom: 12px;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .todo-content {
+        width: 100%;
+    }
+    
+    .todo-text {
+        font-size: 16px;
+        line-height: 1.5;
+    }
+    
+    .todo-meta {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+    
+    .todo-actions {
+        align-self: stretch;
+        justify-content: space-between;
+    }
+    
+    .todo-actions button {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    /* 캘린더 모바일 최적화 */
+    .calendar-container {
+        margin-bottom: 16px;
+    }
+    
+    .calendar-header {
+        padding: 12px 8px;
+    }
+    
+    .calendar-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    .calendar-nav-btn {
+        padding: 8px 12px;
+        font-size: 1.2rem;
+    }
+    
+    .calendar-grid {
+        gap: 1px;
+    }
+    
+    .calendar-day {
+        min-height: 60px;
+        padding: 4px 2px;
+    }
+    
+    .day-number {
+        font-size: 11px;
+    }
+    
+    .calendar-todo-item {
+        padding: 1px 2px;
+        font-size: 8px;
+    }
+    
+    .calendar-todo-checkbox {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .calendar-todo-text {
+        font-size: 8px;
+        max-width: 50px;
+    }
+    
+    /* 선택된 날짜 정보 모바일 최적화 */
+    .selected-date-info {
+        padding: 16px;
+    }
+    
+    .selected-date-info h3 {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+    
+    .date-todos {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .date-todo-section h4 {
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
+    
+    /* 모달 모바일 최적화 */
+    .auth-modal-content {
+        width: 95%;
+        max-width: 400px;
+        margin: 20px auto;
+        padding: 20px;
+    }
+    
+    .auth-modal-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .form-group input {
+        padding: 12px 16px;
+        font-size: 16px; /* iOS 줌 방지 */
+    }
+    
+    .auth-submit-btn {
+        padding: 14px 20px;
+        font-size: 16px;
+    }
+    
+    .subtask-modal-content {
+        width: 95%;
+        max-width: 400px;
+        margin: 20px auto;
+        padding: 20px;
+    }
+    
+    .subtask-input {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .subtask-input input {
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+    
+    .add-subtask-btn {
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+    
+    /* 빈 메시지 모바일 최적화 */
+    .empty-message {
+        padding: 20px 16px;
+        font-size: 14px;
+    }
+    
+    /* 하위 작업 모바일 최적화 */
+    .subtask-item {
+        padding: 12px;
+        margin-bottom: 8px;
+    }
+    
+    .subtask-text {
+        font-size: 14px;
+    }
+    
+    .subtask-actions button {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+}
+
+/* 태블릿 크기 최적화 */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .container {
+        padding: 16px;
     }
     
     .header h1 {
         font-size: 2rem;
     }
     
-    .header-controls {
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .auth-controls {
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-    
-    .auth-btn-header {
-        font-size: 12px;
-        padding: 6px 12px;
-    }
-    
     .todo-sections {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    
-    .input-group {
-        flex-direction: column;
-    }
-    
-    .task-options {
-        flex-direction: column;
-    }
-    
-    .section-controls {
-        justify-content: center;
-    }
-    
-    .todo-item {
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .todo-actions {
-        align-self: flex-end;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
     }
     
     .calendar-day {
-        min-height: 80px;
-        padding: 6px 4px;
-    }
-    
-    .day-number {
-        font-size: 12px;
+        min-height: 70px;
+        padding: 5px 3px;
     }
     
     .calendar-todo-item {
-        padding: 1px 2px;
         font-size: 9px;
-    }
-    
-    .calendar-todo-checkbox {
-        width: 10px;
-        height: 10px;
+        padding: 2px 3px;
     }
     
     .calendar-todo-text {
         font-size: 9px;
-    }
-    
-    .date-todos {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-    
-    .calendar-header {
-        padding: 12px;
-    }
-    
-    .calendar-header h2 {
-        font-size: 1.25rem;
+        max-width: 60px;
     }
 }
 
-@media (max-width: 480px) {
-    .header h1 {
-        font-size: 1.5rem;
+/* 매우 작은 화면 (320px 이하) */
+@media (max-width: 320px) {
+    .container {
+        padding: 8px;
     }
     
-    .modal-content {
-        width: 95%;
+    .header {
+        padding: 8px 4px;
+        margin-bottom: 12px;
+    }
+    
+    .header h1 {
+        font-size: 1.2rem;
+    }
+    
+    .auth-btn-header {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+    
+    .forgot-btn-header {
+        font-size: 9px;
+        padding: 3px 6px;
+    }
+    
+    .theme-toggle {
+        padding: 6px;
+        font-size: 0.9rem;
+    }
+    
+    .view-tab {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .input-section {
+        padding: 12px;
+    }
+    
+    #todoInput {
+        padding: 12px 14px;
+        font-size: 16px;
+    }
+    
+    .add-btn {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+    
+    .todo-item {
+        padding: 12px;
+        margin-bottom: 8px;
+    }
+    
+    .todo-text {
+        font-size: 14px;
+    }
+    
+    .calendar-day {
+        min-height: 50px;
+        padding: 2px 1px;
+    }
+    
+    .day-number {
+        font-size: 10px;
+    }
+    
+    .calendar-todo-item {
+        font-size: 7px;
+        padding: 1px;
+    }
+    
+    .calendar-todo-checkbox {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .calendar-todo-text {
+        font-size: 7px;
+        max-width: 40px;
+    }
+    
+    .auth-modal-content {
+        width: 98%;
+        margin: 10px auto;
+        padding: 16px;
+    }
+    
+    .subtask-modal-content {
+        width: 98%;
+        margin: 10px auto;
         padding: 16px;
     }
 }

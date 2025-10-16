@@ -291,6 +291,17 @@ class SmartTodoApp {
             authMessage.textContent = '';
             authMessage.className = 'auth-message';
         }
+        
+        // 동의 체크박스 초기화
+        const privacyConsent = document.getElementById('privacyConsent');
+        const termsConsent = document.getElementById('termsConsent');
+        const rightsConsent = document.getElementById('rightsConsent');
+        const marketingConsent = document.getElementById('marketingConsent');
+        
+        if (privacyConsent) privacyConsent.checked = false;
+        if (termsConsent) termsConsent.checked = false;
+        if (rightsConsent) rightsConsent.checked = false;
+        if (marketingConsent) marketingConsent.checked = false;
     }
 
     showAuthMessage(message, type) {
@@ -331,6 +342,12 @@ class SmartTodoApp {
         const username = document.getElementById('registerUsername').value.trim();
         const password = document.getElementById('registerPassword').value.trim();
         const confirmPassword = document.getElementById('registerConfirmPassword').value.trim();
+        
+        // 동의 항목 확인
+        const privacyConsent = document.getElementById('privacyConsent').checked;
+        const termsConsent = document.getElementById('termsConsent').checked;
+        const rightsConsent = document.getElementById('rightsConsent').checked;
+        const marketingConsent = document.getElementById('marketingConsent').checked;
 
         if (!username || !password || !confirmPassword) {
             this.showAuthMessage('모든 필드를 입력해주세요.', 'error');
@@ -347,9 +364,27 @@ class SmartTodoApp {
             return;
         }
 
+        // 필수 동의 항목 확인
+        if (!privacyConsent || !termsConsent || !rightsConsent) {
+            this.showAuthMessage('필수 동의 항목에 모두 동의해주세요.', 'error');
+            return;
+        }
+
         try {
             const result = await this.serverAPI.registerUser(username, password);
             this.showAuthMessage('회원가입 성공! 로그인해주세요.', 'success');
+            
+            // 동의 정보를 사용자 데이터에 저장
+            const consentData = {
+                privacyConsent: privacyConsent,
+                termsConsent: termsConsent,
+                rightsConsent: rightsConsent,
+                marketingConsent: marketingConsent,
+                consentDate: new Date().toISOString()
+            };
+            
+            // 동의 정보를 로컬 스토리지에 임시 저장 (로그인 후 Firebase에 저장)
+            localStorage.setItem('tempConsentData', JSON.stringify(consentData));
             
             // 서버 상태 확인 (개발용)
             await this.checkServerStatus();
@@ -1244,7 +1279,160 @@ class SmartTodoApp {
     }
 }
 
+// 동의 상세 내용 표시 (전역 함수)
+function showConsentDetail(type) {
+    const modal = document.getElementById('consentModal');
+    const title = document.getElementById('consentModalTitle');
+    const content = document.getElementById('consentModalContent');
+    
+    if (!modal || !title || !content) return;
+    
+    let titleText = '';
+    let contentText = '';
+    
+    switch(type) {
+        case 'privacy':
+            titleText = '개인정보 수집이용 동의';
+            contentText = `
+                <h4>1. 개인정보의 처리목적</h4>
+                <p>Smart Do-it! 앱은 다음의 목적을 위하여 개인정보를 처리합니다:</p>
+                <ul>
+                    <li>회원가입 및 회원 식별, 인증</li>
+                    <li>할 일 관리 서비스 제공</li>
+                    <li>서비스 이용 통계 및 분석</li>
+                    <li>고객 상담 및 불만 처리</li>
+                </ul>
+                
+                <h4>2. 개인정보의 처리 및 보유기간</h4>
+                <p>처리기간: 회원 탈퇴 시까지<br>
+                보유기간: 회원 탈퇴 후 30일 (관련 법령에 의한 보존 의무가 있는 경우 해당 기간)</p>
+                
+                <h4>3. 처리하는 개인정보의 항목</h4>
+                <p><strong>필수항목:</strong> 사용자명, 비밀번호, 이메일 주소<br>
+                <strong>자동수집항목:</strong> 서비스 이용 기록, 접속 로그, 쿠키, 접속 IP 정보</p>
+                
+                <h4>4. 개인정보의 제3자 제공</h4>
+                <p>Smart Do-it! 앱은 개인정보를 제3자에게 제공하지 않습니다.</p>
+            `;
+            break;
+            
+        case 'terms':
+            titleText = '이용약관';
+            contentText = `
+                <h4>제1조 (목적)</h4>
+                <p>이 약관은 Smart Do-it! 앱의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+                
+                <h4>제2조 (정의)</h4>
+                <ul>
+                    <li>"서비스"란 할 일 관리 기능을 제공하는 웹/모바일 애플리케이션을 의미합니다.</li>
+                    <li>"이용자"란 서비스에 접속하여 이 약관에 따라 서비스를 이용하는 회원을 의미합니다.</li>
+                    <li>"회원"이란 서비스에 개인정보를 제공하여 회원등록을 한 자를 의미합니다.</li>
+                </ul>
+                
+                <h4>제3조 (약관의 효력 및 변경)</h4>
+                <p>이 약관은 서비스를 이용하고자 하는 모든 이용자에게 그 효력이 발생합니다.</p>
+                
+                <h4>제4조 (서비스의 제공)</h4>
+                <p>회사는 다음과 같은 서비스를 제공합니다:</p>
+                <ul>
+                    <li>할 일 등록, 수정, 삭제 기능</li>
+                    <li>할 일 우선순위 설정 기능</li>
+                    <li>마감일 설정 기능</li>
+                    <li>캘린더 뷰 기능</li>
+                    <li>다크/라이트 테마 기능</li>
+                </ul>
+            `;
+            break;
+            
+        case 'rights':
+            titleText = '정보주체권리보장';
+            contentText = `
+                <h4>정보주체의 권리</h4>
+                <p>정보주체는 다음과 같은 권리를 행사할 수 있습니다:</p>
+                <ul>
+                    <li><strong>개인정보 처리현황 통지 요구:</strong> 개인정보 처리 현황에 대한 통지를 요구할 수 있습니다.</li>
+                    <li><strong>개인정보 열람 요구:</strong> 본인의 개인정보를 열람할 수 있습니다.</li>
+                    <li><strong>개인정보 정정·삭제 요구:</strong> 개인정보의 정정, 삭제를 요구할 수 있습니다.</li>
+                    <li><strong>개인정보 처리정지 요구:</strong> 개인정보 처리의 정지를 요구할 수 있습니다.</li>
+                </ul>
+                
+                <h4>권리 행사 방법</h4>
+                <p>정보주체는 개인정보보호법 시행령 제41조제1항에 따라 서면, 전화, 전자우편, 모사전송(FAX) 등을 통하여 권리를 행사할 수 있습니다.</p>
+                
+                <h4>개인정보 보호책임자</h4>
+                <p><strong>성명:</strong> 개인정보보호책임자<br>
+                <strong>연락처:</strong> privacy@smartdoit.com</p>
+                
+                <h4>개인정보의 안전성 확보조치</h4>
+                <ul>
+                    <li>개인정보 암호화</li>
+                    <li>해킹 등에 대비한 기술적 대책</li>
+                    <li>개인정보에 대한 접근 제한</li>
+                    <li>접속기록의 보관 및 위변조 방지</li>
+                </ul>
+            `;
+            break;
+            
+        case 'marketing':
+            titleText = '마케팅 정보 수신 동의';
+            contentText = `
+                <h4>마케팅 정보 수신 동의 (선택)</h4>
+                <p>선택적 동의 항목으로, 동의하지 않아도 서비스 이용이 가능합니다.</p>
+                
+                <h4>수집·이용 목적</h4>
+                <ul>
+                    <li>신규 서비스 및 이벤트 정보 안내</li>
+                    <li>맞춤형 서비스 제공</li>
+                    <li>서비스 개선을 위한 설문조사</li>
+                    <li>고객 만족도 조사</li>
+                </ul>
+                
+                <h4>수집·이용 항목</h4>
+                <ul>
+                    <li>이메일 주소</li>
+                    <li>서비스 이용 기록</li>
+                    <li>접속 로그</li>
+                </ul>
+                
+                <h4>보유·이용 기간</h4>
+                <p>동의 철회 시까지 또는 회원 탈퇴 시까지</p>
+                
+                <h4>동의 철회</h4>
+                <p>언제든지 동의를 철회할 수 있으며, 동의 철회 시 마케팅 정보 수신이 중단됩니다.</p>
+            `;
+            break;
+    }
+    
+    title.textContent = titleText;
+    content.innerHTML = contentText;
+    modal.style.display = 'block';
+}
+
+// 동의 모달 닫기 (전역 함수)
+function closeConsentModal() {
+    const modal = document.getElementById('consentModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
 // 앱 초기화
 document.addEventListener('DOMContentLoaded', () => {
-    new SmartTodoApp();
+    const app = new SmartTodoApp();
+    
+    // 동의 모달 닫기 이벤트 리스너
+    const closeConsentModalBtn = document.getElementById('closeConsentModal');
+    if (closeConsentModalBtn) {
+        closeConsentModalBtn.addEventListener('click', closeConsentModal);
+    }
+    
+    // 모달 외부 클릭 시 닫기
+    const consentModal = document.getElementById('consentModal');
+    if (consentModal) {
+        consentModal.addEventListener('click', (e) => {
+            if (e.target === consentModal) {
+                closeConsentModal();
+            }
+        });
+    }
 });

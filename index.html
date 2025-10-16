@@ -5,21 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart, Do-it! - Todo App</title>
     <meta name="description" content="Smart, Do-it! - 스마트한 할 일 관리 앱">
-    
-    <!-- PWA 메타 태그 -->
-    <meta name="theme-color" content="#6366f1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Smart Do-it!">
-    <meta name="msapplication-TileColor" content="#6366f1">
-    <meta name="msapplication-tap-highlight" content="no">
-    
-    <!-- PWA 아이콘 -->
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
-    <link rel="manifest" href="manifest.json">
-    
     <link rel="stylesheet" href="./style.css">
     <link rel="preload" href="./style.css" as="style">
     <link rel="preload" href="./script.js" as="script">
@@ -296,62 +281,6 @@
             };
         }
     </script>
-    
-    <!-- PWA Service Worker 등록 -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then((registration) => {
-                        console.log('✅ Service Worker 등록 성공:', registration.scope);
-                    })
-                    .catch((error) => {
-                        console.log('❌ Service Worker 등록 실패:', error);
-                    });
-            });
-        }
-        
-        // PWA 설치 프롬프트
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('PWA 설치 프롬프트 준비됨');
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            // 설치 버튼 표시 (선택사항)
-            const installBtn = document.createElement('button');
-            installBtn.textContent = '앱 설치';
-            installBtn.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                background: var(--primary-color);
-                color: white;
-                border: none;
-                padding: 12px 20px;
-                border-radius: 8px;
-                font-weight: 500;
-                cursor: pointer;
-                z-index: 1000;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            `;
-            
-            installBtn.addEventListener('click', () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('사용자가 PWA 설치를 수락했습니다');
-                        }
-                        deferredPrompt = null;
-                        installBtn.remove();
-                    });
-                }
-            });
-            
-            document.body.appendChild(installBtn);
-        });
-    </script>
 </head>
 <body>
     <!-- 메인 앱 화면 -->
@@ -506,6 +435,55 @@
                             <label for="registerConfirmPassword">비밀번호 확인</label>
                             <input type="password" id="registerConfirmPassword" placeholder="비밀번호를 다시 입력하세요" required>
                         </div>
+                        
+                        <!-- 개인정보 수집이용 동의 -->
+                        <div class="form-group consent-group">
+                            <div class="consent-item">
+                                <input type="checkbox" id="privacyConsent" required>
+                                <label for="privacyConsent" class="consent-label">
+                                    <span class="consent-text">개인정보 수집이용에 동의합니다</span>
+                                    <span class="consent-required">(필수)</span>
+                                </label>
+                                <button type="button" class="consent-detail-btn" onclick="showConsentDetail('privacy')">자세히 보기</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 이용약관 동의 -->
+                        <div class="form-group consent-group">
+                            <div class="consent-item">
+                                <input type="checkbox" id="termsConsent" required>
+                                <label for="termsConsent" class="consent-label">
+                                    <span class="consent-text">이용약관에 동의합니다</span>
+                                    <span class="consent-required">(필수)</span>
+                                </label>
+                                <button type="button" class="consent-detail-btn" onclick="showConsentDetail('terms')">자세히 보기</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 정보주체권리보장 동의 -->
+                        <div class="form-group consent-group">
+                            <div class="consent-item">
+                                <input type="checkbox" id="rightsConsent" required>
+                                <label for="rightsConsent" class="consent-label">
+                                    <span class="consent-text">정보주체권리보장에 동의합니다</span>
+                                    <span class="consent-required">(필수)</span>
+                                </label>
+                                <button type="button" class="consent-detail-btn" onclick="showConsentDetail('rights')">자세히 보기</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 마케팅 정보 수신 동의 (선택) -->
+                        <div class="form-group consent-group">
+                            <div class="consent-item">
+                                <input type="checkbox" id="marketingConsent">
+                                <label for="marketingConsent" class="consent-label">
+                                    <span class="consent-text">마케팅 정보 수신에 동의합니다</span>
+                                    <span class="consent-optional">(선택)</span>
+                                </label>
+                                <button type="button" class="consent-detail-btn" onclick="showConsentDetail('marketing')">자세히 보기</button>
+                            </div>
+                        </div>
+                        
                         <button type="submit" id="registerSubmitBtn" class="auth-btn">회원가입</button>
                         <div class="auth-switch">
                             <span>이미 계정이 있으신가요?</span>
@@ -546,6 +524,21 @@
                 <ul id="subtaskList"></ul>
             </div>
         </div>
+        </div>
+    </div>
+
+    <!-- 동의 상세 내용 모달 -->
+    <div id="consentModal" class="modal">
+        <div class="modal-content consent-modal-content">
+            <div class="modal-header">
+                <h3 id="consentModalTitle">동의 상세 내용</h3>
+                <button id="closeConsentModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="consentModalContent" class="consent-content">
+                    <!-- 동의 내용이 여기에 표시됩니다 -->
+                </div>
+            </div>
         </div>
     </div>
 

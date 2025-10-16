@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart, Do-it! - Todo App</title>
+    <meta name="description" content="Smart, Do-it! - 스마트한 할 일 관리 앱">
+    <link rel="stylesheet" href="./style.css">
+    
+    <!-- Firebase SDK (간단한 버전) -->
+    <script type="module">
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEwiVaWkx9VW1w2Myp0CDYsonqKhWUwXo",
+            authDomain: "to-do-list-8f53a.firebaseapp.com",
+            projectId: "to-do-list-8f53a",
+            storageBucket: "to-do-list-8f53a.firebasestorage.app",
+            messagingSenderId: "1003134105451",
+            appId: "1:1003134105451:web:b09e5ba0a1212b26f27e2e",
+            measurementId: "G-1XBV811RNM"
+        };
+
+        // Firebase 초기화 및 API 설정
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            
+            console.log('✅ Firebase 초기화 성공');
+            
+            // Firebase API 설정
+            window.firebaseAPI = {
+                auth: auth,
+                db: db,
+                
+                async registerUser(username, password) {
+                    try {
+                        const email = `${username}@smarttodo.local`;
+                        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                        
+                        await setDoc(doc(db, 'users', userCredential.user.uid), {
+                            username: username,
+                            email: email,
+                            todos: [],
+                            createdAt: serverTimestamp(),
+                            lastUpdated: serverTimestamp()
+                        });
+                        
+                        return { success: true, message: '회원가입 성공!' };
+                    } catch (error) {
+                        console.error('회원가입 오류:', error);
+                        if (error.code === 'auth/email-already-in-use') {
+                            throw new Error('이미 존재하는 사용자명입니다.');
+                        } else if (error.code === 'auth/weak-password') {
+                            throw new Error('비밀번호가 너무 약합니다.');
+                        } else {
+                            throw new Error(`회원가입 중 오류가 발생했습니다: ${error.message}`);
+                        }
+                    }
+                },
+                
+                async loginUser(username, password) {
+                    try {
+                        const email = `${username}@smarttodo.local`;
+                        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                        
+                        const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+                        const userData = userDoc.data();
+                        
+                        return {
+                            success: true,
+                            message: '로그인 성공!',
+                            user: {
+                                uid: userCredential.user.uid,
+                                username: userData.username,
+                                email: email,
+                                todos: userData.todos || []
+                            }
+                        };
+                    } catch (error) {
+                        console.error('로그인 오류:', error);
+                        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                            throw new Error('사용자명 또는 비밀번호가 올바르지 않습니다.');
+                        } else {
+                            throw new Error(`로그인 중 오류가 발생했습니다: ${error.message}`);
+                        }
+                    }
+                },
+                
+                async logoutUser() {
+                    try {
+                        await signOut(auth);
+                        return { success: true };
+                    } catch (error) {
+                        throw new Error('로그아웃 중 오류가 발생했습니다.');
+                    }
+                },
+                
+                async saveUserTodos(uid, todos) {
+                    try {
+                        await updateDoc(doc(db, 'users', uid), {
+                            todos: todos,
+                            lastUpdated: serverTimestamp()
+                        });
+                        return { success: true };
+                    } catch (error) {
+                        throw new Error('할 일 저장 중 오류가 발생했습니다.');
+                    }
+                },
+                
+                async getUserTodos(uid) {
+                    try {
+                        const userDoc = await getDoc(doc(db, 'users', uid));
+                        if (userDoc.exists()) {
+                            const userData = userDoc.data();
+                            return {
+                                success: true,
+                                todos: userData.todos || []
+                            };
+                        } else {
+                            throw new Error('사용자 정보를 찾을 수 없습니다.');
+                        }
+                    } catch (error) {
+                        throw new Error('할 일 불러오기 중 오류가 발생했습니다.');
+                    }
+                },
+                
+                onAuthStateChanged(callback) {
+                    return onAuthStateChanged(auth, callback);
+                }
+            };
+            
+        } catch (error) {
+            console.error('❌ Firebase 초기화 실패:', error);
+            window.firebaseAPI = {
+                error: 'Firebase 초기화 실패',
+                message: error.message
+            };
+        }
+    </script>
+</head>
+<body>
+    <!-- 메인 앱 화면 -->
+    <div id="mainApp" class="main-app">
+        <div class="container">
+            <header class="header">
+                <h1>📝 Smart, Do-it!</h1>
+                <div class="header-controls">
+                    <!-- 로그인되지 않은 상태 -->
+                    <div id="guestControls" class="auth-controls">
+                        <button id="loginBtn" class="auth-btn-header">로그인</button>
+                        <button id="registerBtn" class="auth-btn-header">회원가입</button>
+                        <button id="forgotPasswordBtn" class="auth-btn-header forgot-btn-header">비밀번호 찾기</button>
+                    </div>
+                    
+                    <!-- 로그인된 상태 -->
+                    <div id="userInfo" class="user-info" style="display: none;">
+                        <span id="userName"></span>
+                        <button id="logoutBtn" class="auth-btn-header">로그아웃</button>
+                    </div>
+                    
+                    <!-- 테마 토글 -->
+                    <button id="themeToggleMain" class="theme-toggle">🌙</button>
+                </div>
+            </header>
+
+            <!-- 뷰 전환 탭 -->
+            <div class="view-tabs">
+                <button class="view-tab active" data-view="list">📋 목록</button>
+                <button class="view-tab" data-view="calendar">📅 캘린더</button>
+            </div>
+
+            <!-- 목록 뷰 -->
+            <div id="listView" class="view-content active">
+                <!-- 입력 섹션 -->
+                <div class="input-section">
+                    <form id="todoForm" class="todo-form">
+                        <div class="input-group">
+                            <input type="text" id="todoInput" placeholder="새로운 할 일을 입력하세요..." required>
+                            <button type="submit" class="add-btn">추가</button>
+                        </div>
+                        <div class="input-options">
+                            <select id="prioritySelect">
+                                <option value="normal">보통</option>
+                                <option value="high">높음</option>
+                                <option value="urgent">긴급</option>
+                            </select>
+                            <input type="date" id="dueDate">
+                            <select id="categorySelect">
+                                <option value="general">일반</option>
+                                <option value="work">업무</option>
+                                <option value="personal">개인</option>
+                                <option value="health">건강</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 할 일 목록 -->
+                <div class="todos-container">
+                    <div class="todo-section">
+                        <h2>📋 예정된 할 일</h2>
+                        <ul id="pendingList" class="todo-list"></ul>
+                    </div>
+                    <div class="todo-section">
+                        <h2>✅ 완료된 할 일</h2>
+                        <ul id="completedList" class="todo-list"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 캘린더 뷰 -->
+            <div id="calendarView" class="view-content">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button id="prevMonth" class="calendar-nav-btn">‹</button>
+                        <h2 id="currentMonthYear"></h2>
+                        <button id="nextMonth" class="calendar-nav-btn">›</button>
+                    </div>
+                    <div id="calendarGrid" class="calendar-grid"></div>
+                </div>
+                
+                <!-- 선택된 날짜의 할 일 -->
+                <div id="selectedDateInfo" class="selected-date-info" style="display: none;">
+                    <h3 id="selectedDateTitle"></h3>
+                    <div class="date-todos">
+                        <div class="date-todo-section">
+                            <h4>📋 예정된 할 일</h4>
+                            <ul id="datePendingList" class="date-todo-list"></ul>
+                        </div>
+                        <div class="date-todo-section">
+                            <h4>✅ 완료된 할 일</h4>
+                            <ul id="dateCompletedList" class="date-todo-list"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 인증 모달 -->
+    <div id="authModal" class="auth-modal">
+        <div class="auth-modal-content">
+            <div class="auth-modal-header">
+                <h2 id="authModalTitle">로그인</h2>
+                <button id="closeAuthModal" class="close-btn">×</button>
+            </div>
+            
+            <div id="authMessage" class="auth-message"></div>
+            
+            <!-- 로그인 폼 -->
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginUsername">아이디</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">비밀번호</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">로그인</button>
+            </form>
+            
+            <!-- 회원가입 폼 -->
+            <form id="registerForm" class="auth-form" style="display: none;">
+                <div class="form-group">
+                    <label for="registerUsername">아이디</label>
+                    <input type="text" id="registerUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">비밀번호</label>
+                    <input type="password" id="registerPassword" required minlength="4">
+                    <small>최소 4자 이상</small>
+                </div>
+                <div class="form-group">
+                    <label for="registerConfirmPassword">비밀번호 확인</label>
+                    <input type="password" id="registerConfirmPassword" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">회원가입</button>
+            </form>
+            
+            <!-- 비밀번호 찾기 폼 -->
+            <form id="forgotPasswordForm" class="auth-form" style="display: none;">
+                <div class="form-group">
+                    <label for="forgotUsername">아이디</label>
+                    <input type="text" id="forgotUsername" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">비밀번호 찾기</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 하위 작업 모달 -->
+    <div id="subtaskModal" class="subtask-modal">
+        <div class="subtask-modal-content">
+            <div class="subtask-modal-header">
+                <h3 id="subtaskModalTitle">하위 작업</h3>
+                <button id="closeSubtaskModal" class="close-btn">×</button>
+            </div>
+            <div class="subtask-list" id="subtaskList"></div>
+            <div class="subtask-input">
+                <input type="text" id="subtaskInput" placeholder="새로운 하위 작업...">
+                <button id="addSubtask" class="add-subtask-btn">추가</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./script.js"></script>
+</body>
+</html>

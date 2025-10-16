@@ -23,16 +23,27 @@ class SmartTodoApp {
     }
 
     async waitForServerAPI() {
-        // Firebase API가 로드될 때까지 대기
-        while (!window.firebaseAPI) {
+        // Firebase API가 로드될 때까지 대기 (최대 10초)
+        let attempts = 0;
+        const maxAttempts = 100; // 10초
+        
+        while (!window.firebaseAPI && attempts < maxAttempts) {
             await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
         }
+        
+        if (!window.firebaseAPI) {
+            console.error('❌ Firebase API 로드 실패: 타임아웃');
+            this.showFirebaseError('Firebase API 로드에 실패했습니다. 페이지를 새로고침해주세요.');
+            return;
+        }
+        
         this.serverAPI = window.firebaseAPI;
         
         // Firebase 초기화 오류 확인
         if (this.serverAPI.error) {
             console.error('Firebase 초기화 오류:', this.serverAPI.error);
-            this.showFirebaseError();
+            this.showFirebaseError(this.serverAPI.details || this.serverAPI.message);
         }
     }
 
@@ -262,20 +273,32 @@ class SmartTodoApp {
     }
 
     clearAuthForms() {
-        document.getElementById('loginUsername').value = '';
-        document.getElementById('loginPassword').value = '';
-        document.getElementById('registerUsername').value = '';
-        document.getElementById('registerPassword').value = '';
-        document.getElementById('registerConfirmPassword').value = '';
-        document.getElementById('forgotUsername').value = '';
-        document.getElementById('authMessage').textContent = '';
-        document.getElementById('authMessage').className = 'auth-message';
+        const loginUsername = document.getElementById('loginUsername');
+        const loginPassword = document.getElementById('loginPassword');
+        const registerUsername = document.getElementById('registerUsername');
+        const registerPassword = document.getElementById('registerPassword');
+        const registerConfirmPassword = document.getElementById('registerConfirmPassword');
+        const forgotUsername = document.getElementById('forgotUsername');
+        const authMessage = document.getElementById('authMessage');
+        
+        if (loginUsername) loginUsername.value = '';
+        if (loginPassword) loginPassword.value = '';
+        if (registerUsername) registerUsername.value = '';
+        if (registerPassword) registerPassword.value = '';
+        if (registerConfirmPassword) registerConfirmPassword.value = '';
+        if (forgotUsername) forgotUsername.value = '';
+        if (authMessage) {
+            authMessage.textContent = '';
+            authMessage.className = 'auth-message';
+        }
     }
 
     showAuthMessage(message, type) {
         const authMessage = document.getElementById('authMessage');
-        authMessage.textContent = message;
-        authMessage.className = `auth-message ${type}`;
+        if (authMessage) {
+            authMessage.textContent = message;
+            authMessage.className = `auth-message ${type}`;
+        }
     }
 
     async handleLogin() {
@@ -425,13 +448,15 @@ class SmartTodoApp {
         
         if (this.currentUser) {
             // 로그인된 상태
-            document.getElementById('guestControls').style.display = 'none';
-            document.getElementById('userInfo').style.display = 'flex';
-            userInfo.textContent = `${this.currentUser}님`;
+            if (guestControls) guestControls.style.display = 'none';
+            const userInfoDiv = document.getElementById('userInfo');
+            if (userInfoDiv) userInfoDiv.style.display = 'flex';
+            if (userInfo) userInfo.textContent = `${this.currentUser}님`;
         } else {
             // 로그인되지 않은 상태
-            document.getElementById('guestControls').style.display = 'flex';
-            document.getElementById('userInfo').style.display = 'none';
+            if (guestControls) guestControls.style.display = 'flex';
+            const userInfoDiv = document.getElementById('userInfo');
+            if (userInfoDiv) userInfoDiv.style.display = 'none';
         }
     }
 
@@ -1145,16 +1170,20 @@ class SmartTodoApp {
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         
-        const themeToggle = document.getElementById('themeToggle');
-        themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        const themeToggle = document.getElementById('themeToggleMain');
+        if (themeToggle) {
+            themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
     }
 
     applyTheme() {
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         
-        const themeToggle = document.getElementById('themeToggle');
-        themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        const themeToggle = document.getElementById('themeToggleMain');
+        if (themeToggle) {
+            themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        }
     }
 
     // 서버 상태 확인 (개발용)

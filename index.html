@@ -19,20 +19,30 @@
     5. 아래 firebaseConfig를 실제 설정으로 교체
     -->
     
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-        import firebaseConfig from './firebase-config.js';
+<!-- Firebase SDK -->
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        // Firebase 설정 검증
-        console.log('🔍 Firebase 설정 확인:', {
-            apiKey: firebaseConfig.apiKey ? '설정됨' : '누락',
-            authDomain: firebaseConfig.authDomain,
-            projectId: firebaseConfig.projectId,
-            hasMeasurementId: !!firebaseConfig.measurementId
-        });
+    // Firebase 설정 (깃허브 배포용 - 직접 설정)
+    const firebaseConfig = {
+        apiKey: "AIzaSyDEwiVaWkx9VW1w2Myp0CDYsonqKhWUwXo",
+        authDomain: "to-do-list-8f53a.firebaseapp.com",
+        projectId: "to-do-list-8f53a",
+        storageBucket: "to-do-list-8f53a.firebasestorage.app",
+        messagingSenderId: "1003134105451",
+        appId: "1:1003134105451:web:b09e5ba0a1212b26f27e2e",
+        measurementId: "G-1XBV811RNM"
+    };
+
+    // Firebase 설정 검증
+    console.log('🔍 Firebase 설정 확인:', {
+        apiKey: firebaseConfig.apiKey ? '설정됨' : '누락',
+        authDomain: firebaseConfig.authDomain,
+        projectId: firebaseConfig.projectId,
+        hasMeasurementId: !!firebaseConfig.measurementId
+    });
         
         if (firebaseConfig.apiKey === "YOUR_FIREBASE_API_KEY") {
             console.warn('⚠️ Firebase 설정이 기본값입니다. firebase-config.js 파일을 실제 설정으로 수정하세요.');
@@ -475,4 +485,5 @@
    <script src="./script.js" defer></script>-->
 </body>
 </html>
+
 
